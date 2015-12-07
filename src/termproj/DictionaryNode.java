@@ -6,12 +6,13 @@
 package termproj;
 
 /**
- *
+ * node containing a key/value pair
+ * @version 1
  * @author Jackson
  */
-public class DictionaryNode <Key, Value>{
+/*package*/ class DictionaryNode <Key, Value>{
     private Key k;
-    Value v;
+    private Value v;
     
     public DictionaryNode(Key newKey, Value newValue){
         setKey(newKey);
