@@ -39,7 +39,7 @@ public class TwoFourTree <Value>{
         int index = node.hasValue(value);
         
         if(index != INVALID_INDEX){
-            return (Value)node.contents[index];
+            return (Value)node.elements[index];
         } else{
             return null;
         }
@@ -57,7 +57,7 @@ public class TwoFourTree <Value>{
         int index = node.hasValue(value);
         
         if(index != INVALID_INDEX){
-            result = (Value)node.contents[index];
+            result = (Value)node.elements[index];
             size--;
         } else{
             result = null;
@@ -66,7 +66,7 @@ public class TwoFourTree <Value>{
     }
     
     public void insert(Value value){
-        //TODO
+        TwoFourTreeNode current = root;
     }
     
     /**
@@ -89,24 +89,70 @@ public class TwoFourTree <Value>{
         return current;
     }
     
+    private void splitNodeIntoThree(TwoFourTreeNode node){
+        TwoFourTreeNode leftChild = new TwoFourTreeNode(node);
+        TwoFourTreeNode rightChild = new TwoFourTreeNode(node);
+        
+        //set up left child
+        leftChild.insertElement(0, node.getElement(0));
+        leftChild.insertChild(0, node.getChild(0));
+        leftChild.insertElement(1, node.getChild(1));
+        
+        //set up right child
+        rightChild.insertElement(0, node.getElement(2));
+        rightChild.insertChild(0, node.getChild(2));
+        rightChild.insertElement(1, node.getChild(3));
+        
+        //fix the original node
+        //remove all but middle node
+        node.removeElement(0);
+        node.removeElement(1);
+        node.clearChildren();
+        node.setChild(0, leftChild);
+        node.setChild(1, rightChild);
+    }
+    
     
     private class TwoFourTreeNode{
         public static final int MAX_CHILDREN = 4;
 
+        private int numElements = 0;
+        
         //contains Values
-        private Object[] contents;
+        private Object[] elements;
         //contains TwoFourTreeNodes
         private Object[] children;
         private TwoFourTreeNode parent;
 
         /**
-         * Default constructor
+         * constructs a node with specified parent, pass null for root.
+         * @param parent the node's parent.
          */
         public TwoFourTreeNode(TwoFourTreeNode parent) {
             this.parent = parent;
             //make arrays one larger than necessary for when a node overflows
             children = new Object[MAX_CHILDREN + 1];
-            contents = new Object[MAX_CHILDREN];
+            elements = new Object[MAX_CHILDREN];
+        }
+        
+        public int getNumElements(){
+            return numElements;
+        }
+        
+        /**
+         * inserts an element into the elements array without replacing
+         * existing values.
+         * 
+         * @param index index of insertion
+         * @param newValue value to insert
+         */
+        public void insertElement(int index, Value newValue){
+            //shift up each of the elements until we get to the index of insertion
+            for(int i = numElements - 1; i >= index; i--){
+                elements[i + 1] = elements[i];
+            }
+            elements[index] = newValue;
+            numElements++;
         }
         
         /**
@@ -120,12 +166,10 @@ public class TwoFourTree <Value>{
        public int hasValue(Value value){
            //loop over each one of the contents and check if it has the key
            Value current;
-           for(int i = 0; i < TwoFourTreeNode.MAX_CHILDREN; i++){
-               current = (Value)contents[i];
-               //if it is null we have reached the end of the valid contents
-               if(current == null){
-                   break;
-               }
+           int numChildren = numElements + 1;
+           for(int i = 0; i < numChildren; i++){
+               current = (Value)elements[i];
+               
                if(valueComparator.compare(current, value) == 0){
                    return i;
                }
@@ -145,7 +189,7 @@ public class TwoFourTree <Value>{
             TwoFourTreeNode result = null;
             //find the first value greater than or equal to
             for(int i = 0; i < TwoFourTreeNode.MAX_CHILDREN; i++){
-                current = (Value)contents[i];
+                current = (Value)elements[i];
                 //if the value is greater than all the elements return the last
                 //child
                 if(current == null){
