@@ -36,7 +36,7 @@ public class TwoFourTree <Value>{
      */
     public Value find(Value value){
         TwoFourTreeNode node = findNode(value);
-        int index = node.hasKey(value);
+        int index = node.hasValue(value);
         
         if(index != INVALID_INDEX){
             return (Value)node.contents[index];
@@ -54,7 +54,7 @@ public class TwoFourTree <Value>{
     public Value remove(Value value){
         TwoFourTreeNode node = findNode(value);
         Value result;
-        int index = node.hasKey(value);
+        int index = node.hasValue(value);
         
         if(index != INVALID_INDEX){
             result = (Value)node.contents[index];
@@ -82,7 +82,7 @@ public class TwoFourTree <Value>{
         while(next != current){
             next = current.getCorrespondingChild(value);
             //if the current has the value we are done
-            if(current.hasKey(value) != INVALID_INDEX){
+            if(current.hasValue(value) != INVALID_INDEX){
                 next = current;
             }
         }
@@ -94,10 +94,10 @@ public class TwoFourTree <Value>{
         public static final int MAX_CHILDREN = 4;
 
         //contains Values
-        Object[] contents;
+        private Object[] contents;
         //contains TwoFourTreeNodes
-        Object[] children;
-        TwoFourTreeNode parent;
+        private Object[] children;
+        private TwoFourTreeNode parent;
 
         /**
          * Default constructor
@@ -117,7 +117,7 @@ public class TwoFourTree <Value>{
         * @param value key to check for.
         * @return if key is found return its index in contents if not return INVALID_INDEX.
         */
-       public int hasKey(Value value){
+       public int hasValue(Value value){
            //loop over each one of the contents and check if it has the key
            Value current;
            for(int i = 0; i < TwoFourTreeNode.MAX_CHILDREN; i++){
@@ -151,7 +151,7 @@ public class TwoFourTree <Value>{
                 if(current == null){
                     result = (TwoFourTreeNode)children[i];
                 }else if (valueComparator.compare(current, value) >= 0){
-                    result = (TwoFourTreeNode)children[i + 1];
+                    result = (TwoFourTreeNode)children[i];
                 }
             }
             //if the child node does not exist return the current node
