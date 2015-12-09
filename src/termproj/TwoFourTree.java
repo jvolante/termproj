@@ -228,6 +228,9 @@ public class TwoFourTree <Value>{
             int index = getSortedIndex(newValue);
             insertElement(index, newValue);
             return index;
+        }
+            
+         /**
          * removes an element from the elements array by overwriting it with
          * its neighbor
          * 
@@ -303,16 +306,6 @@ public class TwoFourTree <Value>{
        }
        
        /**
-        * Inserts the node 
-        * 
-        * @param index index
-        * @param node TwoFourTreeNode to be inserted as a child
-        */
-       public void insertChild(int index, TwoFourTreeNode node){
-           children[index] = node;
-       }
-       
-       /**
         * Gets the child node that v should be placed in.
         * 
         * @param value value to find child node for
@@ -339,6 +332,10 @@ public class TwoFourTree <Value>{
             }else{
                 return result;
             }
+        }
+        
+        public TwoFourTreeNode getParent(){
+            return parent;
         }
         
         /**
