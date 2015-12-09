@@ -156,6 +156,30 @@ public class TwoFourTree <Value>{
         }
         
         /**
+         * removes an element from the elements array by overwriting it with
+         * its neighbor
+         * 
+         * @param index index of element to be removed
+         */
+        public void removeElement(int index){
+            //shift over each element starting with the index
+            for(int i = index; i < numElements-1; i++){
+                elements[i] = elements[i+1];
+            }
+            elements[numElements-1] = null;
+            numElements--; 
+        }
+        
+        /**
+         * returns element specified by the index
+         * 
+         * @param index index of the element
+         */
+        public Value getElement(int index){
+            return((Value) elements[index]);
+        }
+        
+        /**
         * checks if the node contains the specified key and returns the index
         * if found.
         * 
@@ -177,6 +201,45 @@ public class TwoFourTree <Value>{
            return INVALID_INDEX;
        }
 
+       /**
+        * Sets the child node 
+        * 
+        * @param index index
+        * @param node TwoFourTree node 
+        */
+       public void setChild(int index, TwoFourTreeNode node){
+           children[index] = node;
+       }
+       
+       /**
+        * Returns the child node with the given index
+        * 
+        * @param index index
+        */
+       public TwoFourTreeNode getChild(int index){
+           return((TwoFourTreeNode) children[index]);
+       }
+       
+       /**
+        * Sets all children to null
+        * 
+        */
+       public void clearChildren(){
+          for( int i = 0; i < children.length; i++){
+              children[i] = null;
+          }
+       }
+       
+       /**
+        * Inserts the node 
+        * 
+        * @param index index
+        * @param node TwoFourTreeNode to be inserted as a child
+        */
+       public void insertChild(int index, TwoFourTreeNode node){
+           children[index] = node;
+       }
+       
        /**
         * Gets the child node that v should be placed in.
         * 
@@ -205,5 +268,7 @@ public class TwoFourTree <Value>{
                 return result;
             }
         }
+        
+        
     }
 }
