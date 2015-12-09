@@ -210,6 +210,15 @@ public class TwoFourTree <Value>{
         }
         
         /**
+         * checks if the node is a leaf node.
+         * 
+         * @return true if this is a leaf false otherwise
+         */
+        public boolean isLeaf(){
+            return children[0] == null;
+        }
+        
+        /**
          * inserts the new value in a position that will keep the array sorted.
          * 
          * @param newValue value to insert
@@ -272,6 +281,13 @@ public class TwoFourTree <Value>{
             }
         }
         
+        /**
+         * gets the index of the specified node in this node's array of children.
+         * 
+         * @param node node to look for
+         * @return index of node in the children array. if it is not found
+         *         returns INVALID_INDEX
+         */
         public int whatChildIsThis(TwoFourTreeNode node){
             for(int i = 0; i < children.length; i++){
                 if(node == children[i]){
@@ -281,9 +297,16 @@ public class TwoFourTree <Value>{
             return INVALID_INDEX;
         }
         
+        /**
+         * returns the position that value must be inserted to maintain sorted
+         * order.
+         * 
+         * @param value value to check position
+         * @return index value needs to be inserted into
+         */
         private int getSortedIndex(Value value){
             for(int i = 0; i < numElements; i++){
-                if(valueComparator.compare((Value)elements[i], newValue) >= 0){
+                if(valueComparator.compare((Value)elements[i], value) >= 0){
                    return i;
                 }
             }
