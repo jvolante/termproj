@@ -89,7 +89,7 @@ public class TwoFourTree <Value>{
             
             size--;
         } else{
-            result = null;
+            throw new ElementNotFoundException();
         }
         return result;
     }
@@ -651,7 +651,11 @@ public class TwoFourTree <Value>{
                 System.out.println("fail " + Integer.toString(x));
                 tfTree.printTree(tfTree.root(), 0);
             }else{
-                System.out.println("pass " + Integer.toString(x));
+                //System.out.println("pass " + Integer.toString(x));
+            }
+            if (s.size() < 20){
+                System.out.println("removing "+x);
+                tfTree.printTree(tfTree.root(), 0);
             }
             System.out.flush();
         }
