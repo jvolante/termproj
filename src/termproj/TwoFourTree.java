@@ -6,6 +6,7 @@
 package termproj;
 
 import java.util.Random;
+import java.util.Stack;
 
 /**
  * An implementation of a 2-4 tree
@@ -61,8 +62,11 @@ public class TwoFourTree <Value>{
         if(index != INVALID_INDEX){
             result = (Value)node.getElement(index);
             
+            //last element removal
+            if(size == 1){
+                root = null;
             //if not a leaf get the in order successor
-            if(!node.isLeaf()){
+            }else if(!node.isLeaf()){
                 current = node.getChild(index + 1);
                 while(!current.isLeaf()){
                     current = current.getChild(0);
@@ -91,10 +95,6 @@ public class TwoFourTree <Value>{
     }
     
     private void fixAfterRemoval(TwoFourTreeNode current){
-        //special case when we remove the last element
-        if(current == root){
-            root = null;
-        }
         if(current.getNumElements() == 0){
             //if the left or right sibiling is a 2 node or more
             //shift values from it to put a value into this node
@@ -102,21 +102,23 @@ public class TwoFourTree <Value>{
 
             //check if we can fix the problem with the left sibling
             if(leftSibling != null && leftSibling.getNumElements() != 1){
-                fixWithLeftSibling(current, leftSibling);
+                leftTransfer(current, leftSibling);
             }else{
                 //if not try the right sibling
                 TwoFourTreeNode rightSibling = current.getRightSibling();
 
                 if(rightSibling != null && rightSibling.getNumElements() != 1){
-                    fixWithRightSibling(current, rightSibling);
+                    rightTransfer(current, rightSibling);
                 }else{
-                    //if not merge using elements from the parent
-                    //continue merging until we reach the root or the
-                    //underflow problem is solved
-                    while(current != root && current.getNumElements() == 0){
-                        performFusion(current);
-                        current = current.getParent();
+                    //if not check left fusion
+                    if(leftSibling != null){
+                        leftFusion(current);
+                    //if nothing else do right fusion
+                    }else{
+                        rightFusion(current);
                     }
+                    
+                    current = current.parent;
 
                     //if we are the root and have underflowed
                     //make our one child the new root
@@ -124,59 +126,63 @@ public class TwoFourTree <Value>{
                         TwoFourTreeNode leftChild = current.getChild(0);
                         leftChild.setParent(null);
                         root = leftChild;
+                    }else{
+                        fixAfterRemoval(current);
                     }
                 }
             }
         }
     }
     
-    private void fixWithLeftSibling(TwoFourTreeNode empty, TwoFourTreeNode sibling){
+    private void leftTransfer(TwoFourTreeNode empty, TwoFourTreeNode sibling){
         TwoFourTreeNode parent = empty.getParent();
         int emptyIndex = parent.whatChildIsThis(empty);
         int leftIndex = emptyIndex - 1;
         
         empty.insertElement(0, parent.getElement(leftIndex));
         parent.replaceElement(leftIndex, sibling.getElement(sibling.getNumElements() - 1));
+        empty.insertChild(0, sibling.getChild(sibling.getNumElements()));
+        
+        sibling.nullChild(sibling.getNumElements());
         sibling.removeElement(sibling.getNumElements() - 1);
     }
     
-    private void fixWithRightSibling(TwoFourTreeNode empty, TwoFourTreeNode sibling){
+    private void rightTransfer(TwoFourTreeNode empty, TwoFourTreeNode sibling){
         TwoFourTreeNode parent = empty.getParent();
         int emptyIndex = parent.whatChildIsThis(empty);
         
         empty.insertElement(0, parent.getElement(emptyIndex));
         parent.replaceElement(emptyIndex, sibling.getElement(0));
+        
+        empty.insertChild(1, sibling.getChild(0));
+        
+        sibling.removeChild(0);
+        
         sibling.removeElement(0);
     }
     
-    private void performFusion(TwoFourTreeNode empty){
+    private void leftFusion(TwoFourTreeNode empty){
         TwoFourTreeNode parent = empty.getParent();
         int emptyIndex = parent.whatChildIsThis(empty);
         
-        //if the empty node is the leftmost child
-        if(emptyIndex == 0){
-            empty.insertSorted(parent.getElement(0));
-            
-            parent.removeElement(0);
-            
-            mergeWithRightSibling(empty);
-            parent.removeChild(emptyIndex + 1);
-            
-        }else{
-            empty.insertSorted(parent.getElement(parent.getNumElements() - 1));
-            
-            parent.removeElement(parent.getNumElements() - 1);
-            
-            mergeWithLeftSibling(empty);
-            parent.removeChild(emptyIndex - 1);
-        }
+        empty.insertElement(0, parent.getElement(emptyIndex - 1));
+        
+        mergeWithLeftSibling(empty);
+        
+        parent.removeChild(emptyIndex - 1);
+        parent.removeElement(emptyIndex - 1);
     }
     
-    private TwoFourTreeNode mergeWithChildren(TwoFourTreeNode empty){
-        TwoFourTreeNode leftChild = empty.getChild(0);
-        leftChild.setParent(null);
+    private void rightFusion(TwoFourTreeNode empty){
+        TwoFourTreeNode parent = empty.getParent();
+        int emptyIndex = parent.whatChildIsThis(empty);
         
-        return leftChild;
+        empty.insertElement(0, parent.getElement(emptyIndex));
+        
+        mergeWithRightSibling(empty);
+        
+        parent.removeChild(emptyIndex + 1);
+        parent.removeElement(emptyIndex);
     }
     
     private void mergeWithLeftSibling(TwoFourTreeNode rightSibling){
@@ -192,8 +198,6 @@ public class TwoFourTree <Value>{
         for(int i = leftSibling.getNumElements() - 1; i >= 0; i--){
             rightSibling.insertElement(0, leftSibling.getElement(i));
         }
-        
-        parent.nullChild(parent.whatChildIsThis(leftSibling));
     }
     
     private void mergeWithRightSibling(TwoFourTreeNode leftSibling){
@@ -627,25 +631,29 @@ public class TwoFourTree <Value>{
     }
     
     public static void main(String[] args){
-        final int TEST_SIZE = 20;
+        final int TEST_SIZE = 1000;
         int i = 0;
         TwoFourTree<Integer> tfTree = new TwoFourTree<>(new IntegerComparator());
         
+        Stack<Integer> s = new Stack();
         Random r = new Random();
         
         while(tfTree.size() < TEST_SIZE){
-            tfTree.insert(i++);
+            i = r.nextInt(100);
+            tfTree.insert(i);
+            s.push(i);
         }
         
         tfTree.printTree(tfTree.root(), 0);
-        
-        for(int x = 0; x < tfTree.size(); x++){
+        while(s.size() > 0){
+            int x = s.pop();
             if(tfTree.remove(x) == null){
                 System.out.println("fail " + Integer.toString(x));
+                tfTree.printTree(tfTree.root(), 0);
             }else{
                 System.out.println("pass " + Integer.toString(x));
-                tfTree.printTree(tfTree.root(), 0);
             }
+            System.out.flush();
         }
     }
 }
