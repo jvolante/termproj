@@ -60,20 +60,22 @@ public class TwoFourTree <Value>{
         if(index != INVALID_INDEX){
             result = (Value)node.getElement(index);
             
-            //get the in order successor
-            TwoFourTreeNode current = node.getChild(index + 1);
-            while(!current.isLeaf()){
-                current = current.getChild(0);
+            //if not a leaf get the in order successor
+            if(!node.isLeaf()){
+                node = node.getChild(index + 1);
+                while(!node.isLeaf()){
+                    node = node.getChild(0);
+                }
+                
+                //replace the removed element
+                node.replaceElement(index, node.getElement(0));
+
+                //remove the element we just used to replace
+                node.removeElement(0);
             }
             
-            //replace the removed element
-            node.replaceElement(index, current.getElement(0));
-            
-            //remove the element we just used to replace
-            current.removeElement(0);
-            
             //if we emptied a leaf, fix it
-            fixAfterRemoval(current);
+            fixAfterRemoval(node);
             
             size--;
         } else{
@@ -401,7 +403,9 @@ public class TwoFourTree <Value>{
          * @param newChild child to insert
          */
         public void insertChild(int index, TwoFourTreeNode newChild){
-            newChild.setParent(this);
+            if(newChild != null){
+                newChild.setParent(this);
+            }
             //shift up each of the elements until we get to the index of insertion
             for(int i = children.length - 2; i >= index; i--){
                 children[i + 1] = children[i];
@@ -515,7 +519,9 @@ public class TwoFourTree <Value>{
         * @param node TwoFourTree node 
         */
        public void replaceChild(int index, TwoFourTreeNode newChild){
-           newChild.setParent(this);
+           if(newChild != null){
+                newChild.setParent(this);
+           }
            children[index] = newChild;
        }
        
@@ -531,17 +537,14 @@ public class TwoFourTree <Value>{
             TwoFourTreeNode result = null;
             //find the first value greater than or equal to
             for(int i = 0; i < children.length; i++){
-                if(i == elements.length){
+                //if the value is greater than all the elements
+                //return the last child
+                if(i == numElements){
                     result = (TwoFourTreeNode)children[i];
                     break;
                 }
                 current = (Value)elements[i];
-                //if the value is greater than all the elements return the last
-                //child
-                if(current == null){
-                    result = (TwoFourTreeNode)children[i];
-                    break;
-                }else if (valueComparator.isGreaterThanOrEqualTo(current, value)){
+                if (valueComparator.isGreaterThanOrEqualTo(current, value)){
                     result = (TwoFourTreeNode)children[i];
                     break;
                 }
@@ -617,6 +620,7 @@ public class TwoFourTree <Value>{
         }
         
         tfTree.printTree(tfTree.root(), 0);
+        System.out.flush();
         
         for(int x = 0; x < tfTree.size(); x++){
             if(tfTree.remove(x) == null){
