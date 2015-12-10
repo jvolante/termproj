@@ -57,13 +57,152 @@ public class TwoFourTree <Value>{
         Value result;
         int index = node.hasValue(value);
         
+        //if the value is found in the tree
         if(index != INVALID_INDEX){
-            result = (Value)node.elements[index];
+            result = (Value)node.getElement(index);
+            
+            //get the in order successor
+            TwoFourTreeNode current = node.getChild(index + 1);
+            while(!current.isLeaf()){
+                current = current.getChild(0);
+            }
+            
+            //replace the removed element
+            node.replaceElement(index, current.getElement(0));
+            
+            //remove the element we just used to replace
+            current.removeElement(0);
+            
+            //if we emptied a leaf, fix it
+            fixAfterRemoval(current);
+            
             size--;
         } else{
             result = null;
         }
         return result;
+    }
+    
+    private void fixAfterRemoval(TwoFourTreeNode current){
+        if(current.getNumElements() == 0){
+            //if the left or right sibiling is a 2 node or more
+            //shift values from it to put a value into this node
+            TwoFourTreeNode leftSibling = current.getLeftSibling();
+
+            //check if we can fix the problem with the left sibling
+            if(leftSibling != null && leftSibling.getNumElements() != 1){
+                fixWithLeftSibling(current, leftSibling);
+            }else{
+                //if not try the right sibling
+                TwoFourTreeNode rightSibling = current.getRightSibling();
+
+                if(rightSibling != null && rightSibling.getNumElements() != 1){
+                    fixWithRightSibling(current, rightSibling);
+                }else{
+                    //if not merge using elements from the parent
+                    //continue merging until we reach the root or the
+                    //underflow problem is solved
+                    while(current != root && current.getNumElements() == 0){
+                        mergeWithParentElements(current);
+                        current = current.getParent();
+                    }
+
+                    //if we are the root and have underflowed
+                    //combine our two children and set as the new root
+                    if(current.getNumElements() == 0){
+                        root = mergeWithChildren(current);
+                    }
+                }
+            }
+        }
+    }
+    
+    private void fixWithLeftSibling(TwoFourTreeNode empty, TwoFourTreeNode sibling){
+        TwoFourTreeNode parent = empty.getParent();
+        int emptyIndex = parent.whatChildIsThis(empty);
+        int leftIndex = emptyIndex - 1;
+        
+        empty.insertElement(0, parent.getElement(leftIndex));
+        parent.replaceElement(leftIndex, sibling.getElement(sibling.getNumElements() - 1));
+        sibling.removeElement(sibling.getNumElements() - 1);
+    }
+    
+    private void fixWithRightSibling(TwoFourTreeNode empty, TwoFourTreeNode sibling){
+        TwoFourTreeNode parent = empty.getParent();
+        int emptyIndex = parent.whatChildIsThis(empty);
+        int rightIndex = emptyIndex + 1;
+        
+        empty.insertElement(0, parent.getElement(rightIndex));
+        parent.replaceElement(rightIndex, sibling.getElement(0));
+        sibling.removeElement(0);
+    }
+    
+    private void mergeWithParentElements(TwoFourTreeNode empty){
+        TwoFourTreeNode parent = empty.getParent();
+        int emptyIndex = parent.whatChildIsThis(empty);
+        
+        if(emptyIndex == 0){
+            TwoFourTreeNode rightSibling = parent.getChild(emptyIndex + 1);
+            rightSibling.insertSorted(parent.getElement(0));
+            
+            parent.removeChild(emptyIndex);
+            parent.removeElement(0);
+            
+            mergeWithLeftSibling(rightSibling);
+            
+        }else{
+            TwoFourTreeNode leftSibling = parent.getChild(emptyIndex - 1);
+            leftSibling.insertSorted(parent.getElement(parent.getNumElements() - 1));
+            
+            parent.removeChild(emptyIndex);
+            parent.removeElement(parent.getNumElements() - 1);
+            
+            mergeWithRightSibling(leftSibling);
+        }
+    }
+    
+    private TwoFourTreeNode mergeWithChildren(TwoFourTreeNode empty){
+        TwoFourTreeNode leftChild = empty.getChild(0);
+        TwoFourTreeNode rightChild = empty.getChild(1);
+        
+        for(int i = 0; i < rightChild.getNumElements(); i++){
+            leftChild.replaceElement(leftChild.getNumElements() + i, rightChild.getElement(i));
+            leftChild.replaceChild(leftChild.getNumElements() + 1 + i, rightChild.getChild(i + 1));
+        }
+        
+        return leftChild;
+    }
+    
+    private void mergeWithLeftSibling(TwoFourTreeNode rightSibling){
+        TwoFourTreeNode parent = rightSibling.getParent();
+        TwoFourTreeNode leftSibling = parent.getChild(parent.whatChildIsThis(rightSibling) - 1);
+        
+        //move children
+        for(int i = leftSibling.getNumElements(); i >= 0; i--){
+            rightSibling.insertChild(0, leftSibling.getChild(i));
+        }
+        
+        //move elements
+        for(int i = leftSibling.getNumElements() - 1; i >= 0; i--){
+            rightSibling.insertElement(0, leftSibling.getElement(i));
+        }
+        
+        parent.removeChild(parent.whatChildIsThis(leftSibling));
+    }
+    
+    private void mergeWithRightSibling(TwoFourTreeNode leftSibling){
+        TwoFourTreeNode parent = leftSibling.getParent();
+        TwoFourTreeNode rightSibling = parent.getChild(parent.whatChildIsThis(leftSibling) + 1);
+        
+        //move children
+        for(int i = 0; i < rightSibling.getNumElements() + 1; i++){
+            leftSibling.insertChild(leftSibling.getNumElements() + i, rightSibling.getChild(i));
+        }
+        
+        //move elements
+        for(int i = 0; i < rightSibling.getNumElements(); i++){
+            leftSibling.insertElement(leftSibling.getNumElements(), rightSibling.getElement(i));
+        }
     }
     
     public void insert(Value value){
@@ -74,7 +213,7 @@ public class TwoFourTree <Value>{
             TwoFourTreeNode current = findNode(root, value);
 
             //find the appropriate leaf and insert the value
-            while(current.hasValue(value) != INVALID_INDEX){
+            while(current.hasValue(value) != INVALID_INDEX && !current.isLeaf()){
                 current = current.getCorrespondingChild(value);
                 current = findNode(current, value);
             }
@@ -371,6 +510,14 @@ public class TwoFourTree <Value>{
           }
        }
        
+       public void replaceElement(int index, Value newElement){
+           elements[index] = newElement;
+       }
+       
+       public void replaceChild(int index, TwoFourTreeNode newChild){
+           children[index] = newChild;
+       }
+       
        /**
         * Gets the child node that v should be placed in.
         * 
@@ -471,10 +618,15 @@ public class TwoFourTree <Value>{
         Random r = new Random();
         
         while(tfTree.size() < TEST_SIZE){
-            tfTree.insert(i);
             tfTree.insert(i++);
         }
         
         tfTree.printTree(tfTree.root(), 0);
+        
+        for(int x = 0; x < tfTree.size(); x++){
+            if(tfTree.remove(x) == null){
+                System.out.println("fail " + Integer.toString(x));
+            }
+        }
     }
 }
