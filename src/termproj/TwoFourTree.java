@@ -140,7 +140,8 @@ public class TwoFourTree <Value>{
         int leftIndex = emptyIndex - 1;
         
         empty.insertElement(0, parent.getElement(leftIndex));
-        parent.replaceElement(leftIndex, sibling.getElement(sibling.getNumElements() - 1));
+        parent.replaceElement(leftIndex, sibling.getElement(
+                sibling.getNumElements() - 1));
         empty.insertChild(0, sibling.getChild(sibling.getNumElements()));
         
         sibling.nullChild(sibling.getNumElements());
@@ -187,7 +188,8 @@ public class TwoFourTree <Value>{
     
     private void mergeWithLeftSibling(TwoFourTreeNode rightSibling){
         TwoFourTreeNode parent = rightSibling.getParent();
-        TwoFourTreeNode leftSibling = parent.getChild(parent.whatChildIsThis(rightSibling) - 1);
+        TwoFourTreeNode leftSibling = parent.getChild(
+                parent.whatChildIsThis(rightSibling) - 1);
         
         //move children
         for(int i = leftSibling.getNumElements(); i >= 0; i--){
@@ -202,16 +204,19 @@ public class TwoFourTree <Value>{
     
     private void mergeWithRightSibling(TwoFourTreeNode leftSibling){
         TwoFourTreeNode parent = leftSibling.getParent();
-        TwoFourTreeNode rightSibling = parent.getChild(parent.whatChildIsThis(leftSibling) + 1);
+        TwoFourTreeNode rightSibling = parent.getChild(
+                parent.whatChildIsThis(leftSibling) + 1);
         
         //move children
         for(int i = 0; i < rightSibling.getNumElements() + 1; i++){
-            leftSibling.insertChild(leftSibling.getNumElements() + i, rightSibling.getChild(i));
+            leftSibling.insertChild(leftSibling.getNumElements() + i, 
+                    rightSibling.getChild(i));
         }
         
         //move elements
         for(int i = 0; i < rightSibling.getNumElements(); i++){
-            leftSibling.insertElement(leftSibling.getNumElements(), rightSibling.getElement(i));
+            leftSibling.insertElement(leftSibling.getNumElements(), 
+                    rightSibling.getElement(i));
         }
     }
     
@@ -223,7 +228,8 @@ public class TwoFourTree <Value>{
             TwoFourTreeNode current = findNode(root, value);
 
             //find the appropriate leaf and insert the value
-            while(current.hasValue(value) != INVALID_INDEX && !current.isLeaf()){
+            while(current.hasValue(value) != INVALID_INDEX 
+                    && !current.isLeaf()){
                 current = current.getCorrespondingChild(value);
                 current = findNode(current, value);
             }
@@ -396,7 +402,8 @@ public class TwoFourTree <Value>{
          * @param newValue value to insert
          */
         public void insertElement(int index, Value newValue){
-            //shift up each of the elements until we get to the index of insertion
+            //shift up each of the elements until we get to 
+            //the index of insertion
             for(int i = numElements - 1; i >= index; i--){
                 elements[i + 1] = elements[i];
             }
@@ -415,7 +422,8 @@ public class TwoFourTree <Value>{
             if(newChild != null){
                 newChild.setParent(this);
             }
-            //shift up each of the elements until we get to the index of insertion
+            //shift up each of the elements until we get to 
+            //the index of insertion
             for(int i = children.length - 2; i >= index; i--){
                 children[i + 1] = children[i];
             }
@@ -490,7 +498,8 @@ public class TwoFourTree <Value>{
         * 
         * @param node the node to search in
         * @param value key to check for.
-        * @return if key is found return its index in contents if not return INVALID_INDEX.
+        * @return if key is found return its index in contents 
+        *         if not return INVALID_INDEX.
         */
        public int hasValue(Value value){
            //loop over each one of the contents and check if it has the key
@@ -583,7 +592,8 @@ public class TwoFourTree <Value>{
         }
         
         /**
-         * gets the index of the specified node in this node's array of children.
+         * gets the index of the specified node 
+         * in this node's array of children.
          * 
          * @param node node to look for
          * @return index of node in the children array. if it is not found
@@ -622,7 +632,8 @@ public class TwoFourTree <Value>{
          */
         private int getSortedIndex(Value value){
             for(int i = 0; i < numElements; i++){
-                if(valueComparator.isGreaterThanOrEqualTo((Value)elements[i], value)){
+                if(valueComparator.isGreaterThanOrEqualTo(
+                        (Value)elements[i], value)){
                    return i;
                 }
             }
@@ -633,7 +644,8 @@ public class TwoFourTree <Value>{
     public static void main(String[] args){
         final int TEST_SIZE = 1000;
         int i = 0;
-        TwoFourTree<Integer> tfTree = new TwoFourTree<>(new IntegerComparator());
+        TwoFourTree<Integer> tfTree = new TwoFourTree<>(
+                new IntegerComparator());
         
         Stack<Integer> s = new Stack();
         Random r = new Random();
@@ -650,8 +662,6 @@ public class TwoFourTree <Value>{
             if(tfTree.remove(x) == null){
                 System.out.println("fail " + Integer.toString(x));
                 tfTree.printTree(tfTree.root(), 0);
-            }else{
-                //System.out.println("pass " + Integer.toString(x));
             }
             if (s.size() < 20){
                 System.out.println("removing "+x);
