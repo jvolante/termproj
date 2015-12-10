@@ -53,6 +53,7 @@ public class TwoFourTree <Value>{
      */
     public Value remove(Value value){
         TwoFourTreeNode node = findNode(root, value);
+        TwoFourTreeNode current = null;
         Value result;
         int index = node.hasValue(value);
         
@@ -62,20 +63,25 @@ public class TwoFourTree <Value>{
             
             //if not a leaf get the in order successor
             if(!node.isLeaf()){
-                node = node.getChild(index + 1);
-                while(!node.isLeaf()){
-                    node = node.getChild(0);
+                current = node.getChild(index + 1);
+                while(!current.isLeaf()){
+                    current = current.getChild(0);
                 }
                 
                 //replace the removed element
-                node.replaceElement(index, node.getElement(0));
+                node.replaceElement(index, current.getElement(0));
 
                 //remove the element we just used to replace
-                node.removeElement(0);
+                current.removeElement(0);
+            }else{
+                node.removeElement(index);
+                current = node;
             }
             
             //if we emptied a leaf, fix it
-            fixAfterRemoval(node);
+            if(current != null){
+                fixAfterRemoval(current);
+            }
             
             size--;
         } else{
@@ -85,6 +91,10 @@ public class TwoFourTree <Value>{
     }
     
     private void fixAfterRemoval(TwoFourTreeNode current){
+        //special case when we remove the last element
+        if(current == root){
+            root = null;
+        }
         if(current.getNumElements() == 0){
             //if the left or right sibiling is a 2 node or more
             //shift values from it to put a value into this node
@@ -104,14 +114,16 @@ public class TwoFourTree <Value>{
                     //continue merging until we reach the root or the
                     //underflow problem is solved
                     while(current != root && current.getNumElements() == 0){
-                        mergeWithParentElements(current);
+                        performFusion(current);
                         current = current.getParent();
                     }
 
                     //if we are the root and have underflowed
-                    //combine our two children and set as the new root
-                    if(current.getNumElements() == 0){
-                        root = mergeWithChildren(current);
+                    //make our one child the new root
+                    if(current == root && current.getNumElements() == 0){
+                        TwoFourTreeNode leftChild = current.getChild(0);
+                        leftChild.setParent(null);
+                        root = leftChild;
                     }
                 }
             }
@@ -131,45 +143,37 @@ public class TwoFourTree <Value>{
     private void fixWithRightSibling(TwoFourTreeNode empty, TwoFourTreeNode sibling){
         TwoFourTreeNode parent = empty.getParent();
         int emptyIndex = parent.whatChildIsThis(empty);
-        int rightIndex = emptyIndex + 1;
         
-        empty.insertElement(0, parent.getElement(rightIndex));
-        parent.replaceElement(rightIndex, sibling.getElement(0));
+        empty.insertElement(0, parent.getElement(emptyIndex));
+        parent.replaceElement(emptyIndex, sibling.getElement(0));
         sibling.removeElement(0);
     }
     
-    private void mergeWithParentElements(TwoFourTreeNode empty){
+    private void performFusion(TwoFourTreeNode empty){
         TwoFourTreeNode parent = empty.getParent();
         int emptyIndex = parent.whatChildIsThis(empty);
         
         if(emptyIndex == 0){
-            TwoFourTreeNode rightSibling = parent.getChild(emptyIndex + 1);
-            rightSibling.insertSorted(parent.getElement(0));
+            empty.insertSorted(parent.getElement(0));
             
-            parent.removeChild(emptyIndex);
             parent.removeElement(0);
             
-            mergeWithLeftSibling(rightSibling);
+            mergeWithRightSibling(empty);
+            parent.removeChild(emptyIndex + 1);
             
         }else{
-            TwoFourTreeNode leftSibling = parent.getChild(emptyIndex - 1);
-            leftSibling.insertSorted(parent.getElement(parent.getNumElements() - 1));
+            empty.insertSorted(parent.getElement(parent.getNumElements() - 1));
             
-            parent.removeChild(emptyIndex);
             parent.removeElement(parent.getNumElements() - 1);
             
-            mergeWithRightSibling(leftSibling);
+            mergeWithLeftSibling(empty);
+            parent.removeChild(emptyIndex - 1);
         }
     }
     
     private TwoFourTreeNode mergeWithChildren(TwoFourTreeNode empty){
         TwoFourTreeNode leftChild = empty.getChild(0);
-        TwoFourTreeNode rightChild = empty.getChild(1);
-        
-        for(int i = 0; i < rightChild.getNumElements(); i++){
-            leftChild.replaceElement(leftChild.getNumElements() + i, rightChild.getElement(i));
-            leftChild.replaceChild(leftChild.getNumElements() + 1 + i, rightChild.getChild(i + 1));
-        }
+        leftChild.setParent(null);
         
         return leftChild;
     }
@@ -583,7 +587,12 @@ public class TwoFourTree <Value>{
         
         public TwoFourTreeNode getLeftSibling(){
             int leftIndex = parent.whatChildIsThis(this) - 1;
-            return parent.getChild(leftIndex);
+            
+            if(leftIndex < 0){
+                return null;
+            }else{
+                return parent.getChild(leftIndex);
+            }
         }
         
         public TwoFourTreeNode getRightSibling(){
@@ -609,7 +618,7 @@ public class TwoFourTree <Value>{
     }
     
     public static void main(String[] args){
-        final int TEST_SIZE = 1000;
+        final int TEST_SIZE = 20;
         int i = 0;
         TwoFourTree<Integer> tfTree = new TwoFourTree<>(new IntegerComparator());
         
@@ -620,11 +629,13 @@ public class TwoFourTree <Value>{
         }
         
         tfTree.printTree(tfTree.root(), 0);
-        System.out.flush();
         
         for(int x = 0; x < tfTree.size(); x++){
             if(tfTree.remove(x) == null){
                 System.out.println("fail " + Integer.toString(x));
+            }else{
+                System.out.println("pass " + Integer.toString(x));
+                tfTree.printTree(tfTree.root(), 0);
             }
         }
     }
