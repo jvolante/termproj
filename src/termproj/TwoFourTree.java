@@ -153,6 +153,7 @@ public class TwoFourTree <Value>{
         TwoFourTreeNode parent = empty.getParent();
         int emptyIndex = parent.whatChildIsThis(empty);
         
+        //if the empty node is the leftmost child
         if(emptyIndex == 0){
             empty.insertSorted(parent.getElement(0));
             
@@ -192,7 +193,7 @@ public class TwoFourTree <Value>{
             rightSibling.insertElement(0, leftSibling.getElement(i));
         }
         
-        parent.removeChild(parent.whatChildIsThis(leftSibling));
+        parent.nullChild(parent.whatChildIsThis(leftSibling));
     }
     
     private void mergeWithRightSibling(TwoFourTreeNode leftSibling){
@@ -314,8 +315,8 @@ public class TwoFourTree <Value>{
         //clean up the old node
         node.removeElement(3);
         node.removeElement(2);
-        node.removeChild(4);
-        node.removeChild(3);
+        node.nullChild(4);
+        node.nullChild(3);
         
         int index = parent.whatChildIsThis(node) + 1;
         parent.insertChild(index, newChild);
@@ -458,8 +459,16 @@ public class TwoFourTree <Value>{
          * 
          * @param index index of element to be removed
          */
-        public void removeChild(int index){
+        public void nullChild(int index){
             children[index] = null;
+        }
+        
+        public void removeChild(int index){
+            //shift over each element starting with the index
+            for(int i = index; i < numElements; i++){
+                children[i] = children[i+1];
+            }
+            children[numElements] = null;
         }
         
         /**
