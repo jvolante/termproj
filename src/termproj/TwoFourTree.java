@@ -6,6 +6,7 @@
 package termproj;
 
 import java.util.Comparator;
+import java.util.Random;
 
 /**
  * An implementation of a 2-4 tree
@@ -66,25 +67,43 @@ public class TwoFourTree <Value>{
     }
     
     public void insert(Value value){
-        TwoFourTreeNode current = findNode(root, value);
-        
-        //find the appropriate leaf and insert the value
-        while(current.hasValue(value) != INVALID_INDEX){
-            current = current.getCorrespondingChild(value);
-            current = findNode(current, value);
-        }
-        current.insertSorted(value);
-        
-        //make sure the tree is still following the rules
-        //if it is not fix it
-        while(current.getNumElements() == 4){
-            if(current == root){
-                splitNodeIntoThree(current);
-            }else{
-                mergeWithParent(current);
+        if(isEmpty()){
+            root = new TwoFourTreeNode(null);
+            root.insertSorted(value);
+        }else{
+            TwoFourTreeNode current = findNode(root, value);
+
+            //find the appropriate leaf and insert the value
+            while(current.hasValue(value) != INVALID_INDEX){
+                current = current.getCorrespondingChild(value);
+                current = findNode(current, value);
             }
-            current = current.parent;
+            current.insertSorted(value);
+
+            //make sure the tree is still following the rules
+            //if it is not fix it
+            while(current.getNumElements() == 4){
+                if(current == root){
+                    splitNodeIntoThree(current);
+                }else{
+                    mergeWithParent(current);
+                }
+                current = current.parent;
+            }
         }
+        size++;
+    }
+    
+    /**
+     * returns the number of elements in the tree.
+     * @return number of elements in the tree.
+     */
+    public int size(){
+        return size;
+    }
+    
+    public boolean isEmpty(){
+        return size == 0;
     }
     
     /**
@@ -113,16 +132,16 @@ public class TwoFourTree <Value>{
         //set up left child
         leftChild.insertElement(0, node.getElement(0));
         leftChild.insertChild(0, node.getChild(0));
-        leftChild.insertElement(1, node.getChild(1));
+        leftChild.insertChild(1, node.getChild(1));
         
         //set up right child
         rightChild.insertElement(0, node.getElement(2));
         rightChild.insertChild(0, node.getChild(2));
-        rightChild.insertElement(1, node.getChild(3));
+        rightChild.insertChild(1, node.getChild(3));
         
         //fix the original node
         //remove all but middle node
-        node.removeElement(0);
+        node.removeElement(1);
         node.removeElement(0);
         node.clearChildren();
         node.setChild(0, leftChild);
@@ -151,6 +170,36 @@ public class TwoFourTree <Value>{
         
     }
     
+    public void printTree(TwoFourTreeNode start, int indent) {
+        if (start == null) {
+            return;
+        }
+        for (int i = 0; i < indent; i++) {
+            System.out.print(" ");
+        }
+        printTFNode(start);
+        indent += 4;
+        int numChildren = start.getNumElements() + 1;
+        for (int i = 0; i < numChildren; i++) {
+            printTree(start.getChild(i), indent);
+        }
+    }
+
+    public void printTFNode(TwoFourTreeNode node) {
+        int numItems = node.getNumElements();
+        for (int i = 0; i < numItems; i++) {
+            System.out.print((Value) node.getElement(i) + " ");
+        }
+        System.out.println();
+    }
+
+    /**
+     * returns the root of the tree.
+     * @return root node in the tree.
+     */
+    public TwoFourTreeNode root() {
+        return root;
+    }
     
     private class TwoFourTreeNode{
         public static final int MAX_CHILDREN = 4;
@@ -246,6 +295,15 @@ public class TwoFourTree <Value>{
         }
         
         /**
+         * nulls a child pointer
+         * 
+         * @param index index of element to be removed
+         */
+        public void removeChild(int index){
+            children[index] = null;
+        }
+        
+        /**
          * returns element specified by the index
          * 
          * @param index index of the element
@@ -287,12 +345,13 @@ public class TwoFourTree <Value>{
        }
        
        /**
-        * Returns the child node with the given index
+        * Returns a reference to the child at the specified index.
         * 
-        * @param index index
+        * @param index index of child to return.
+        * @return 
         */
        public TwoFourTreeNode getChild(int index){
-           return((TwoFourTreeNode) children[index]);
+           return (TwoFourTreeNode)children[index];
        }
        
        /**
@@ -334,6 +393,10 @@ public class TwoFourTree <Value>{
             }
         }
         
+        /**
+         * returns the parent to the node.
+         * @return parent
+         */
         public TwoFourTreeNode getParent(){
             return parent;
         }
@@ -354,6 +417,16 @@ public class TwoFourTree <Value>{
             return INVALID_INDEX;
         }
         
+        public TwoFourTreeNode getLeftSibling(){
+            int leftIndex = parent.whatChildIsThis(this) - 1;
+            return parent.getChild(leftIndex);
+        }
+        
+        public TwoFourTreeNode getRightSibling(){
+            int rightIndex = parent.whatChildIsThis(this) + 1;
+            return parent.getChild(rightIndex);
+        }
+        
         /**
          * returns the position that value must be inserted to maintain sorted
          * order.
@@ -368,6 +441,23 @@ public class TwoFourTree <Value>{
                 }
             }
             return numElements;
+        }
+    }
+    
+    public static void main(String[] args){
+        final int TEST_SIZE = 1000;
+        TwoFourTree<Integer> tfTree = new TwoFourTree<>(new Comparator<Integer>() {
+
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o1 - o2;
+            }
+        });
+        
+        Random r = new Random();
+        
+        while(tfTree.size() < TEST_SIZE){
+            tfTree.insert(r.nextInt(100));
         }
     }
 }
