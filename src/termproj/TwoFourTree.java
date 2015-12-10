@@ -291,8 +291,8 @@ public class TwoFourTree <Value>{
         node.removeElement(2);
         node.removeElement(0);
         node.clearChildren();
-        node.setChild(0, leftChild);
-        node.setChild(1, rightChild);
+        node.replaceChild(0, leftChild);
+        node.replaceChild(1, rightChild);
     }
     
     private void mergeWithParent(TwoFourTreeNode node){
@@ -374,6 +374,10 @@ public class TwoFourTree <Value>{
             return numElements;
         }
         
+        public void setParent(TwoFourTreeNode parent){
+            this.parent = parent;
+        }
+        
         /**
          * inserts an element into the elements array without replacing
          * existing values.
@@ -398,6 +402,7 @@ public class TwoFourTree <Value>{
          * @param newChild child to insert
          */
         public void insertChild(int index, TwoFourTreeNode newChild){
+            newChild.setParent(this);
             //shift up each of the elements until we get to the index of insertion
             for(int i = children.length - 2; i >= index; i--){
                 children[i + 1] = children[i];
@@ -479,16 +484,6 @@ public class TwoFourTree <Value>{
            }
            return INVALID_INDEX;
        }
-
-       /**
-        * Sets the child node 
-        * 
-        * @param index index
-        * @param node TwoFourTree node 
-        */
-       public void setChild(int index, TwoFourTreeNode node){
-           children[index] = node;
-       }
        
        /**
         * Returns a reference to the child at the specified index.
@@ -514,7 +509,14 @@ public class TwoFourTree <Value>{
            elements[index] = newElement;
        }
        
+       /**
+        * Sets the child node 
+        * 
+        * @param index index
+        * @param node TwoFourTree node 
+        */
        public void replaceChild(int index, TwoFourTreeNode newChild){
+           newChild.setParent(this);
            children[index] = newChild;
        }
        
