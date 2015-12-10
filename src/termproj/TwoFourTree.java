@@ -5,7 +5,6 @@
  */
 package termproj;
 
-import java.util.Comparator;
 import java.util.Random;
 
 /**
@@ -17,7 +16,7 @@ public class TwoFourTree <Value>{
     private static final int INVALID_INDEX = -1;
     
     private int size = 0;
-    private Comparator<Value> valueComparator;
+    private Comparator valueComparator;
     private TwoFourTreeNode root = null;
     
     /**
@@ -25,7 +24,7 @@ public class TwoFourTree <Value>{
      * 
      * @param comp the comparator used to sort the keys.
      */
-    public TwoFourTree(Comparator<Value> comp){
+    public TwoFourTree(Comparator comp){
         valueComparator = comp;
     }
     
@@ -478,7 +477,7 @@ public class TwoFourTree <Value>{
            for(int i = 0; i < numElements; i++){
                current = (Value)elements[i];
                
-               if(valueComparator.compare(current, value) == 0){
+               if(valueComparator.isEqual(current, value)){
                    return i;
                }
            }
@@ -542,7 +541,7 @@ public class TwoFourTree <Value>{
                 if(current == null){
                     result = (TwoFourTreeNode)children[i];
                     break;
-                }else if (valueComparator.compare(current, value) >= 0){
+                }else if (valueComparator.isGreaterThanOrEqualTo(current, value)){
                     result = (TwoFourTreeNode)children[i];
                     break;
                 }
@@ -598,7 +597,7 @@ public class TwoFourTree <Value>{
          */
         private int getSortedIndex(Value value){
             for(int i = 0; i < numElements; i++){
-                if(valueComparator.compare((Value)elements[i], value) >= 0){
+                if(valueComparator.isGreaterThanOrEqualTo((Value)elements[i], value)){
                    return i;
                 }
             }
@@ -609,13 +608,7 @@ public class TwoFourTree <Value>{
     public static void main(String[] args){
         final int TEST_SIZE = 1000;
         int i = 0;
-        TwoFourTree<Integer> tfTree = new TwoFourTree<>(new Comparator<Integer>() {
-
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                return o1 - o2;
-            }
-        });
+        TwoFourTree<Integer> tfTree = new TwoFourTree<>(new IntegerComparator());
         
         Random r = new Random();
         

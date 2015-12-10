@@ -25,4 +25,8 @@ class DictionaryPair {
     public Object getValue(){
         return value;
     }
+    
+    public String toString(){
+        return "(" + key.toString() + ", " + value.toString() + ")";
+    }
 }

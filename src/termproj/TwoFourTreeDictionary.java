@@ -12,6 +12,11 @@ package termproj;
 public class TwoFourTreeDictionary implements Dictionary {
     
     private TwoFourTree<DictionaryPair> tfTree;
+    
+    public TwoFourTreeDictionary(Comparator keyComp){
+        DictKeyComparator comp = new DictKeyComparator(keyComp);
+    }
+    
     @Override
     public int size() {
         return tfTree.size();
@@ -19,22 +24,25 @@ public class TwoFourTreeDictionary implements Dictionary {
 
     @Override
     public boolean isEmpty() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return tfTree.isEmpty();
     }
 
     @Override
     public Object findElement(Object key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        DictionaryPair value = new DictionaryPair(key, null);
+        return tfTree.find(value);
     }
 
     @Override
     public void insertElement(Object key, Object element) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        DictionaryPair value = new DictionaryPair(key, element);
+        tfTree.insert(value);
     }
 
     @Override
     public Object removeElement(Object key) throws ElementNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        DictionaryPair value = new DictionaryPair(key, null);
+        return tfTree.remove(value);
     }
     
     public void printTree(){
