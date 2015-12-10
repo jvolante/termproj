@@ -82,7 +82,7 @@ public class TwoFourTree <Value>{
 
             //make sure the tree is still following the rules
             //if it is not fix it
-            while(current.getNumElements() == 4){
+            while(current != null && current.getNumElements() == 4){
                 if(current == root){
                     splitNodeIntoThree(current);
                 }else{
@@ -115,11 +115,13 @@ public class TwoFourTree <Value>{
      */
     private TwoFourTreeNode findNode(TwoFourTreeNode current, Value value){
         TwoFourTreeNode next = null;
-        while(next != current){
+        TwoFourTreeNode previous = null;
+        while(previous != current){
             next = current.getCorrespondingChild(value);
             //if the current has the value we are done
-            if(current.hasValue(value) != INVALID_INDEX){
-                next = current;
+            if(current.hasValue(value) == INVALID_INDEX){
+                previous = current;
+                current = next;
             }
         }
         return current;
@@ -136,12 +138,15 @@ public class TwoFourTree <Value>{
         
         //set up right child
         rightChild.insertElement(0, node.getElement(2));
+        rightChild.insertElement(1, node.getElement(3));
         rightChild.insertChild(0, node.getChild(2));
         rightChild.insertChild(1, node.getChild(3));
+        rightChild.insertChild(2, node.getChild(4));
         
         //fix the original node
         //remove all but middle node
-        node.removeElement(1);
+        node.removeElement(3);
+        node.removeElement(2);
         node.removeElement(0);
         node.clearChildren();
         node.setChild(0, leftChild);
@@ -323,8 +328,7 @@ public class TwoFourTree <Value>{
        public int hasValue(Value value){
            //loop over each one of the contents and check if it has the key
            Value current;
-           int numChildren = numElements + 1;
-           for(int i = 0; i < numChildren; i++){
+           for(int i = 0; i < numElements; i++){
                current = (Value)elements[i];
                
                if(valueComparator.compare(current, value) == 0){
@@ -376,13 +380,19 @@ public class TwoFourTree <Value>{
             TwoFourTreeNode result = null;
             //find the first value greater than or equal to
             for(int i = 0; i < children.length; i++){
+                if(i == elements.length){
+                    result = (TwoFourTreeNode)children[i];
+                    break;
+                }
                 current = (Value)elements[i];
                 //if the value is greater than all the elements return the last
                 //child
                 if(current == null){
                     result = (TwoFourTreeNode)children[i];
+                    break;
                 }else if (valueComparator.compare(current, value) >= 0){
                     result = (TwoFourTreeNode)children[i];
+                    break;
                 }
             }
             //if the child node does not exist return the current node
@@ -459,5 +469,7 @@ public class TwoFourTree <Value>{
         while(tfTree.size() < TEST_SIZE){
             tfTree.insert(r.nextInt(100));
         }
+        
+        tfTree.printTree(tfTree.root(), 0);
     }
 }
