@@ -122,6 +122,9 @@ public class TwoFourTree <Value>{
             if(current.hasValue(value) == INVALID_INDEX){
                 previous = current;
                 current = next;
+            }else{
+                //if the value is found we are done
+                previous = current;
             }
         }
         return current;
@@ -257,7 +260,7 @@ public class TwoFourTree <Value>{
          */
         public void insertChild(int index, TwoFourTreeNode newChild){
             //shift up each of the elements until we get to the index of insertion
-            for(int i = numElements; i >= index; i--){
+            for(int i = children.length - 2; i >= index; i--){
                 children[i + 1] = children[i];
             }
             children[index] = newChild;
@@ -456,6 +459,7 @@ public class TwoFourTree <Value>{
     
     public static void main(String[] args){
         final int TEST_SIZE = 1000;
+        int i = 0;
         TwoFourTree<Integer> tfTree = new TwoFourTree<>(new Comparator<Integer>() {
 
             @Override
@@ -467,7 +471,8 @@ public class TwoFourTree <Value>{
         Random r = new Random();
         
         while(tfTree.size() < TEST_SIZE){
-            tfTree.insert(r.nextInt(100));
+            tfTree.insert(i);
+            tfTree.insert(i++);
         }
         
         tfTree.printTree(tfTree.root(), 0);
